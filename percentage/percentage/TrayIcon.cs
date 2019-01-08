@@ -48,22 +48,16 @@ namespace percentage
             PowerStatus powerStatus = SystemInformation.PowerStatus;
             batteryPercentage = (powerStatus.BatteryLifePercent * 100).ToString();
 
-            using (Bitmap bitmap = new Bitmap(DrawText(batteryPercentage, new Font(iconFont, iconFontSize), Color.White, Color.Black)))
+            notifyIcon.Text = batteryPercentage + "%";
+
+            // We can only display 2 digits so we only go to 99%
+            if (batteryPercentage == "100")
             {
-                System.IntPtr intPtr = bitmap.GetHicon();
-                try
-                {
-                    using (Icon icon = Icon.FromHandle(intPtr))
-                    {
-                        notifyIcon.Icon = icon;
-                        notifyIcon.Text = batteryPercentage + "%";
-                    }
-                }
-                finally
-                {
-                    DestroyIcon(intPtr);
-                }
+                batteryPercentage = "99";
             }
+      
+            CreateTextIcon(batteryPercentage);
+            
         }
 
         private void menuItem_Click(object sender, EventArgs e)
@@ -71,6 +65,25 @@ namespace percentage
             notifyIcon.Visible = false;
             notifyIcon.Dispose();
             Application.Exit();
+        }
+
+        // Code from : https://stackoverflow.com/questions/36379547/writing-text-to-the-system-tray-instead-of-an-icon
+        // The text is much clearer and bigger
+        private void CreateTextIcon(string str)
+        {
+            Font fontToUse = new Font("Microsoft Sans Serif", 16, FontStyle.Regular, GraphicsUnit.Pixel);
+            Brush brushToUse = new SolidBrush(Color.White);
+            Bitmap bitmapText = new Bitmap(16, 16);
+            Graphics g = System.Drawing.Graphics.FromImage(bitmapText);
+
+            IntPtr hIcon;
+
+            g.Clear(Color.Transparent);
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+            g.DrawString(str, fontToUse, brushToUse, -4, -2);
+            hIcon = (bitmapText.GetHicon());
+            notifyIcon.Icon = System.Drawing.Icon.FromHandle(hIcon);
+            DestroyIcon(hIcon);
         }
 
         private Image DrawText(String text, Font font, Color textColor, Color backColor)
