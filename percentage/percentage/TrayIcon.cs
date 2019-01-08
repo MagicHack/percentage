@@ -50,14 +50,10 @@ namespace percentage
 
             notifyIcon.Text = batteryPercentage + "%";
 
-            // We can only display 2 digits so we only go to 99%
-            if (batteryPercentage == "100")
-            {
-                batteryPercentage = "99";
-            }
-      
-            CreateTextIcon(batteryPercentage);
-            
+            // We can only display 2 big or 3 small characters
+            if (batteryPercentage != "100") batteryPercentage += "%";
+
+            CreateTextIconSmall(batteryPercentage);
         }
 
         private void menuItem_Click(object sender, EventArgs e)
@@ -68,7 +64,7 @@ namespace percentage
         }
 
         // Code from : https://stackoverflow.com/questions/36379547/writing-text-to-the-system-tray-instead-of-an-icon
-        // The text is much clearer and bigger
+        // The text is much clearer and bigger, max 2 char
         private void CreateTextIcon(string str)
         {
             Font fontToUse = new Font("Microsoft Sans Serif", 16, FontStyle.Regular, GraphicsUnit.Pixel);
@@ -85,7 +81,23 @@ namespace percentage
             notifyIcon.Icon = System.Drawing.Icon.FromHandle(hIcon);
             DestroyIcon(hIcon);
         }
+        // Smaller text but still clear, max 3 char
+        public void CreateTextIconSmall(string str)
+        {
+            Font fontToUse = new Font("Trebuchet MS", 10, FontStyle.Regular, GraphicsUnit.Pixel);
+            Brush brushToUse = new SolidBrush(Color.White);
+            Bitmap bitmapText = new Bitmap(16, 16);
+            Graphics g = System.Drawing.Graphics.FromImage(bitmapText);
 
+            IntPtr hIcon;
+
+            g.Clear(Color.Transparent);
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+            g.DrawString(str, fontToUse, brushToUse, -2, 0);
+            hIcon = (bitmapText.GetHicon());
+            notifyIcon.Icon = System.Drawing.Icon.FromHandle(hIcon);
+            DestroyIcon(hIcon);
+        }
         private Image DrawText(String text, Font font, Color textColor, Color backColor)
         {
             var textSize = GetImageSize(text, font);
